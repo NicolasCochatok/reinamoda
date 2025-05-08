@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- ========================= SECTION MAIN ========================= -->
+<section class="section-intro banner-fullscreen">
+  <div class="intro-banner-wrap position-relative">
+    <img src="{% static 'images/banners/banner_chica.png' %}" class="img-fluid banner-full" alt="Banner Reina">
+
+    <div class="intro-texto-cascada">
+      <h2>Conocé nuestra historia</h2>
+      <p>
+        En <strong>Reina Moda y Accesorios</strong> creemos que cada mujer merece brillar con un estilo auténtico y lleno de personalidad. 
+        Por eso, seleccionamos cuidadosamente accesorios únicos y de tendencia, pensados para realzar tu esencia en cada ocasión.
+        <br><br>
+        Nuestra propuesta combina elegancia, calidad y un toque distintivo que transforma lo cotidiano en especial.
+        Elegimos cada producto con dedicación, inspirados en la fuerza, la belleza y la autenticidad femenina.
+        Gracias por ser parte de esta comunidad que celebra la moda con amor y actitud.
+      </p>
+    </div>
+
+    <a href="{% url 'home' %}" onclick="animarLogo()">
+      <img id="logoReina" src="{% static 'images/logo-reina-sf.png' %}" class="logo-banner-reina animate-logo" alt="Logo Reina">
+    </a>
+  </div>
+</section>
+<!-- ========================= SECTION MAIN END// ========================= -->
+
+<!-- ========================= SECTION PRODUCTOS ========================= -->
+<section class="section-name padding-y-sm">
+  <div class="container">
+    <header class="section-heading">
+      <a href="{% url 'store' %}" class="btn btn-rosa float-right">Ver Todo</a>
+      <h3 class="section-title">Los más vendidos</h3>
+    </header>
+
+    <div class="row">
+      {% for product in products %}
+      <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+        <div class="card card-product-grid">
+          <a href="{{ product.get_url }}" class="img-wrap"> 
+            {% if product.images %}
+              <img src="{{ product.images.url }}" alt="{{ product.product_name }}">
+            {% else %}
+              <img src="{% static 'images/no-image.png' %}" alt="Sin imagen">
+            {% endif %}
+          </a>
+          <figcaption class="info-wrap">
+            <a href="{{ product.get_url }}" class="title">{{ product.product_name }}</a>
+            <div class="price mt-1">{{ product.price }}</div>
+
+            <div class="rating-star">
+              <span>
+                <i class="fa fa-star{% if product.averageReview < 0.5 %}-o{% elif product.averageReview < 1 %}-half-o{% endif %}"></i>
+                <i class="fa fa-star{% if product.averageReview < 1.5 %}-o{% elif product.averageReview < 2 %}-half-o{% endif %}"></i>
+                <i class="fa fa-star{% if product.averageReview < 2.5 %}-o{% elif product.averageReview < 3 %}-half-o{% endif %}"></i>
+                <i class="fa fa-star{% if product.averageReview < 3.5 %}-o{% elif product.averageReview < 4 %}-half-o{% endif %}"></i>
+                <i class="fa fa-star{% if product.averageReview < 4.5 %}-o{% elif product.averageReview < 5 %}-half-o{% endif %}"></i>
+              </span>
+            </div>
+          </figcaption>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+<!-- ========================= SECTION END// ========================= -->
+{% endblock %}
