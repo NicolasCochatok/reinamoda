@@ -5,25 +5,27 @@
 {% block content %}
 {% block body_class %}store-page{% endblock %}
 
-<!-- ========================= SECTION PAGETOP ========================= -->
+<!-- SECTION: Título -->
 <section class="section-pagetop bg">
   <div class="container">
     <h2 class="title-page">Encuentra los mejores productos</h2>
   </div>
 </section>
-<!-- ========================= SECTION INTRO END// ========================= -->
 
-<!-- ========================= SECTION CONTENT ========================= -->
+<!-- SECTION: Contenido -->
 <section class="section-content padding-y">
   <div class="container">
     <div class="row">
+      <!-- FILTROS LATERALES -->
       <aside class="col-md-3">
         <div class="card">
+
+          <!-- Categorías -->
           <article class="filter-group">
             <header class="card-header">
               <a href="#" data-toggle="collapse" data-target="#collapse_1" aria-expanded="true">
                 <i class="icon-control fa fa-chevron-down"></i>
-                <h6 class="title">Categorias</h6>
+                <h6 class="title">Categorías</h6>
               </a>
             </header>
             <div class="filter-content collapse show" id="collapse_1">
@@ -38,6 +40,7 @@
             </div>
           </article>
 
+          <!-- Tamaños -->
           <article class="filter-group">
             <header class="card-header">
               <a href="#" data-toggle="collapse" data-target="#collapse_4" aria-expanded="true">
@@ -57,6 +60,7 @@
             </div>
           </article>
 
+          <!-- Precios -->
           <article class="filter-group">
             <header class="card-header">
               <a href="#" data-toggle="collapse" data-target="#collapse_3" aria-expanded="true">
@@ -92,9 +96,11 @@
               </div>
             </div>
           </article>
+
         </div>
       </aside>
 
+      <!-- PRODUCTOS -->
       <main class="col-md-9">
         <header class="border-bottom mb-4 pb-3">
           <div class="form-inline">
@@ -109,10 +115,10 @@
                 <figure class="card card-product-grid">
                   <div class="img-wrap">
                     <a href="{{ product.get_url }}">
-                      {% if product.images.name %}
-                        <img src="{{ product.images.url }}" alt="{{ product.product_name }}">
+                      {% if product.image %}
+                          <img src="{{ product.image.url }}" alt="{{ product.product_name }}">
                       {% else %}
-                        <img src="{% static 'images/no-image.png' %}" alt="Imagen no disponible">
+                          <img src="{% static 'images/no-image.png' %}" alt="Imagen no disponible">
                       {% endif %}
                     </a>
                   </div>
@@ -120,7 +126,7 @@
                     <div class="fix-height">
                       <a href="{{ product.get_url }}" class="title">{{ product.product_name }}</a>
                       <div class="price-wrap mt-2">
-                        <span class="price">{{ product.price }}</span>
+                        <span class="price">${{ product.price }}</span>
                       </div>
                     </div>
                     <a href="{% url 'add_cart' product.id %}" class="btn btn-block btn-success">Agregar al Carrito</a>
@@ -135,6 +141,7 @@
           {% endif %}
         </div>
 
+        <!-- Paginación -->
         <nav class="mt-4" aria-label="Page navigation">
           {% if products.has_other_pages %}
             <ul class="pagination">

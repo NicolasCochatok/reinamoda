@@ -1,111 +1,70 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load custom_filters %}
 
 {% block content %}
 <section class="section-content padding-y bg">
   <div class="container">
-    {% if not cart_items %}
-      <h3 class="text-center">¡Parece que no has agregado nada aún! Añade productos de tu interés al carrito.</h3>
-      <br>
-      <div class="text-center">
-        <a href="{% url 'store' %}" class="btn btn-primary">Continuar Comprando</a>
-      </div>
-    {% else %}
     <div class="row">
-      <aside class="col-lg-9">
+      <!-- IMAGEN PRINCIPAL -->
+      <aside class="col-md-6">
         <div class="card">
-          <table class="table table-borderless table-shopping-cart">
-            <thead class="text-muted">
-              <tr class="small text-uppercase">
-                <th scope="col">Producto(s)</th>
-                <th scope="col" width="120">Cantidad</th>
-                <th scope="col" width="120">Precio</th>
-                <th scope="col" class="text-right" width="200"> </th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for cart_item in cart_items %}
-              <tr>
-                <td>
-                  <figure class="itemside align-items-center">
-                    <div class="aside">
-                      {% if cart_item.product.images and cart_item.product.images.url %}
-                        <img src="{{ cart_item.product.images.url }}" class="img-sm" alt="{{ cart_item.product.product_name }}">
-                      {% else %}
-                        <img src="{% static 'images/no-image.png' %}" class="img-sm" alt="Imagen no disponible">
-                      {% endif %}
-                    </div>
-                    <figcaption class="info">
-                      <a href="{{ cart_item.product.get_url }}" class="title text-dark">{{ cart_item.product.product_name }}</a>
-                      <p class="text-muted small">
-                        {% for item in cart_item.variation.all %}
-                          {{ item.variation_category|capfirst }}: {{ item.variation_value|capfirst }}<br>
-                        {% endfor %}
-                      </p>
-                    </figcaption>
-                  </figure>
-                </td>
-                <td>
-                  <div class="col">
-                    <div class="input-group input-spinner">
-                      <div class="input-group-prepend">
-                        <a href="{% url 'remove_cart' cart_item.product.id cart_item.id %}" class="btn btn-light" type="button"> <i class="fa fa-minus"></i> </a>
-                      </div>
-                      <input type="text" class="form-control" value="{{ cart_item.quantity }}">
-                      <div class="input-group-append">
-                        <form action="{% url 'add_cart' cart_item.product.id %}" method="post">
-                          {% csrf_token %}
-                          {% for item in cart_item.variation.all %}
-                          <input type="hidden" name="{{ item.variation_category|lower }}" value="{{ item.variation_value|capfirst }}">
-                          {% endfor %}
-                          <button class="btn btn-light" type="submit"><i class="fa fa-plus"></i></button>
-                        </form>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <div class="price-wrap">
-                    <var class="price">${{ cart_item.sub_total }}</var>
-                    <small class="text-muted">${{ cart_item.product.price }} cada uno</small>
-                  </div>
-                </td>
-                <td class="text-right">
-                  <a href="{% url 'remove_cart_item' cart_item.product.id cart_item.id %}" class="btn btn-danger">Eliminar</a>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+          {% if single_product.image %}
+            <img src="{{ single_product.image.url }}" class="img-fluid" alt="{{ single_product.product_name }}">
+          {% else %}
+            <img src="{% static 'images/no-image.png' %}" class="img-fluid" alt="Imagen no disponible">
+          {% endif %}
         </div>
       </aside>
 
-      <aside class="col-lg-3">
-        <div class="card">
-          <div class="card-body">
-            <dl class="dlist-align">
-              <dt>Precio Total:</dt>
-              <dd class="text-right">${{ total }}</dd>
-            </dl>
-            <dl class="dlist-align">
-              <dt>Impuesto IVA (16%):</dt>
-              <dd class="text-right">${{ tax }}</dd>
-            </dl>
-            <dl class="dlist-align">
-              <dt>Total:</dt>
-              <dd class="text-right text-dark b"><strong>${{ grand_total }}</strong></dd>
-            </dl>
-            <hr>
-            <p class="text-center mb-3">
-              <img src="{% static 'images/misc/payments.png' %}" height="26">
-            </p>
-            <a href="{% url 'checkout' %}" class="btn btn-primary btn-block">Pagar</a>
-            <a href="{% url 'store' %}" class="btn btn-light btn-block">Continuar comprando</a>
+      <!-- INFORMACIÓN DEL PRODUCTO -->
+      <main class="col-md-6">
+        <article class="product-info-aside">
+          <h2 class="title text-dark">{{ single_product.product_name }}</h2>
+          <div class="mb-3">
+            <span class="price h4">${{ single_product.price }}</span>
           </div>
-        </div>
-      </aside>
+
+          {% if single_product.description %}
+            <p>{{ single_product.description }}</p>
+          {% endif %}
+
+          <form action="{% url 'add_cart' single_product.id %}" method="post">
+            {% csrf_token %}
+
+            {% with single_product.variation_set.all as variations %}
+              {% if variations %}
+                {% if variations|filter_by_category:"color" %}
+                  <div class="form-group">
+                    <label>Color:</label>
+                    <select name="color" class="form-control" required>
+                      <option value="" selected>Elegí un color</option>
+                      {% for color in variations|filter_by_category:"color" %}
+                        <option value="{{ color.variation_value }}">{{ color.variation_value|capfirst }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                {% endif %}
+
+                {% if variations|filter_by_category:"talla" %}
+                  <div class="form-group">
+                    <label>Talla:</label>
+                    <select name="talla" class="form-control" required>
+                      <option value="" selected>Elegí una talla</option>
+                      {% for talla in variations|filter_by_category:"talla" %}
+                        <option value="{{ talla.variation_value }}">{{ talla.variation_value|capfirst }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                {% endif %}
+              {% endif %}
+            {% endwith %}
+
+            <button type="submit" class="btn btn-primary mt-3">Agregar al carrito</button>
+          </form>
+        </article>
+      </main>
     </div>
-    {% endif %}
   </div>
 </section>
 {% endblock %}
