@@ -4,175 +4,108 @@
 {% block content %}
 <section class="section-content padding-y bg">
   <div class="container">
-    <div class="card">
-      <div class="row no-gutters">
-        <aside class="col-md-6">
-          <article class="gallery-wrap">
-            <div class="img-big-wrap mainImage zoom-container">
-              <center>
-                {% if single_product.images.name %}
-                  <img src="{{ single_product.images.url }}" alt="Imagen Principal">
-                {% else %}
-                  <img src="{% static 'images/no-image.png' %}" alt="Sin imagen">
-                {% endif %}
-              </center>
-            </div>
-          </article>
-          <ul class="thumb">
-            <li>
-              {% if single_product.images.name %}
-                <a href="{{ single_product.images.url }}" target="mainImage"><img src="{{ single_product.images.url }}" alt="Imagen del Producto"></a>
-              {% else %}
-                <a href="#"><img src="{% static 'images/no-image.png' %}" alt="Imagen del Producto"></a>
-              {% endif %}
-              {% for i in product_gallery %}
-                <a href="{{ i.image.url }}" target="mainImage"><img src="{{ i.image.url }}" alt="Imagen del Producto"></a>
-              {% endfor %}
-            </li>
-          </ul>
-        </aside>
-
-        <main class="col-md-6 border-left">
-          <form action="{% url 'add_cart' single_product.id %}" method="POST">
-            {% csrf_token %}
-            <article class="content-body">
-              <h2 class="title">{{ single_product.product_name }}</h2>
-
-              <div class="rating-star">
-                <span>
-                  {% for i in "12345" %}
-                    <i class="fa fa-star{% if single_product.averageReview < forloop.counter0 + 0.5 %}-o{% elif single_product.averageReview < forloop.counter %}-half-o{% endif %}" aria-hidden="true"></i>
-                  {% endfor %}
-                  <span> ({{ single_product.countReview }} Comentarios realizados)</span>
-                </span>
-              </div>
-
-              <br>
-              <div class="mb-3">
-                <var class="price h4">$ {{ single_product.price }}</var>
-              </div>
-
-              <p>{{ single_product.description }}</p>
-
-              <hr>
-              <div class="row">
-                <div class="item-option-select">
-                  <h6>Escoge el color</h6>
-                  <select class="form-control" name="color" required>
-                    <option value="" disabled selected>Seleccionar</option>
-                    {% for i in single_product.variation_set.colors %}
-                      <option value="{{ i.variation_value|lower }}">{{ i.variation_value|capfirst }}</option>
-                    {% endfor %}
-                  </select>
-                </div>
-              </div>
-
-              <div class="row">
-                <div class="item-option-select">
-                  <h6>Escoge la tallas</h6>
-                  <select class="form-control" name="talla" required>
-                    <option value="" disabled selected>Seleccionar</option>
-                    {% for i in single_product.variation_set.tallas %}
-                      <option value="{{ i.variation_value|lower }}">{{ i.variation_value|capfirst }}</option>
-                    {% endfor %}
-                  </select>
-                </div>
-              </div>
-
-              <hr>
-
-              {% if single_product.stock <= 0 %}
-                <h5>Lo lamentamos, este producto está fuera de stock</h5>
-              {% else %}
-                <button type="submit" class="btn btn-dorado">
-                  <span class="text">Agregar al Carrito</span>
-                  <i class="fas fa-shopping-cart"></i>
-                </button>
-              {% endif %}
-            </article>
-          </form>
-        </main>
+    {% if not cart_items %}
+      <h3 class="text-center">¡Parece que no has agregado nada aún! Añade productos de tu interés al carrito.</h3>
+      <br>
+      <div class="text-center">
+        <a href="{% url 'store' %}" class="btn btn-primary">Continuar Comprando</a>
       </div>
-    </div>
-
-    <br>
-
+    {% else %}
     <div class="row">
-      <div class="col-md-9">
-        <form action="{% url 'submit_review' single_product.id %}" method="post">
-          {% csrf_token %}
-          <h5>Escribe tu reseña o comentario</h5>
-          <br>
-
-          <div class="">
-            <label>¿Cómo calificarías este producto?</label>
-            <div class="rate">
-              {% for i in "10987654321" %}
-                {% with val=i|floatformat:1 %}
-                  <input type="radio" name="rating" value="{{ val|floatformat }}" id="rating{{ i }}">
-                  <label for="rating{{ i }}" title="{{ val }}" class="{% if val|floatformat:'1'|floatformat:'0.5' != val %}half{% endif %}"></label>
-                {% endwith %}
+      <aside class="col-lg-9">
+        <div class="card">
+          <table class="table table-borderless table-shopping-cart">
+            <thead class="text-muted">
+              <tr class="small text-uppercase">
+                <th scope="col">Producto(s)</th>
+                <th scope="col" width="120">Cantidad</th>
+                <th scope="col" width="120">Precio</th>
+                <th scope="col" class="text-right" width="200"> </th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for cart_item in cart_items %}
+              <tr>
+                <td>
+                  <figure class="itemside align-items-center">
+                    <div class="aside">
+                      {% if cart_item.product.images and cart_item.product.images.url %}
+                        <img src="{{ cart_item.product.images.url }}" class="img-sm" alt="{{ cart_item.product.product_name }}">
+                      {% else %}
+                        <img src="{% static 'images/no-image.png' %}" class="img-sm" alt="Imagen no disponible">
+                      {% endif %}
+                    </div>
+                    <figcaption class="info">
+                      <a href="{{ cart_item.product.get_url }}" class="title text-dark">{{ cart_item.product.product_name }}</a>
+                      <p class="text-muted small">
+                        {% for item in cart_item.variation.all %}
+                          {{ item.variation_category|capfirst }}: {{ item.variation_value|capfirst }}<br>
+                        {% endfor %}
+                      </p>
+                    </figcaption>
+                  </figure>
+                </td>
+                <td>
+                  <div class="col">
+                    <div class="input-group input-spinner">
+                      <div class="input-group-prepend">
+                        <a href="{% url 'remove_cart' cart_item.product.id cart_item.id %}" class="btn btn-light" type="button"> <i class="fa fa-minus"></i> </a>
+                      </div>
+                      <input type="text" class="form-control" value="{{ cart_item.quantity }}">
+                      <div class="input-group-append">
+                        <form action="{% url 'add_cart' cart_item.product.id %}" method="post">
+                          {% csrf_token %}
+                          {% for item in cart_item.variation.all %}
+                          <input type="hidden" name="{{ item.variation_category|lower }}" value="{{ item.variation_value|capfirst }}">
+                          {% endfor %}
+                          <button class="btn btn-light" type="submit"><i class="fa fa-plus"></i></button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="price-wrap">
+                    <var class="price">${{ cart_item.sub_total }}</var>
+                    <small class="text-muted">${{ cart_item.product.price }} cada uno</small>
+                  </div>
+                </td>
+                <td class="text-right">
+                  <a href="{% url 'remove_cart_item' cart_item.product.id cart_item.id %}" class="btn btn-danger">Eliminar</a>
+                </td>
+              </tr>
               {% endfor %}
-            </div>
-            <br>
+            </tbody>
+          </table>
+        </div>
+      </aside>
 
-            <label>Título del comentario:</label>
-            <input type="text" class="form-control" name="subject">
-
-            <br>
-            <label>Comentario:</label>
-            <textarea name="review" rows="4" class="form-control" placeholder="Escribe aquí tu reseña"></textarea>
-            <br>
-
-            {% if user.is_authenticated %}
-              {% if orderproduct %}
-                <input type="submit" value="Enviar reseña" class="btn btn-primary">
-              {% else %}
-                <p>¡Debes comprar este producto para dejar una reseña!</p>
-              {% endif %}
-            {% else %}
-              <p>Para comentar debes estar registrado. <a href="{% url 'login' %}">Inicia sesión</a></p>
-            {% endif %}
+      <aside class="col-lg-3">
+        <div class="card">
+          <div class="card-body">
+            <dl class="dlist-align">
+              <dt>Precio Total:</dt>
+              <dd class="text-right">${{ total }}</dd>
+            </dl>
+            <dl class="dlist-align">
+              <dt>Impuesto IVA (16%):</dt>
+              <dd class="text-right">${{ tax }}</dd>
+            </dl>
+            <dl class="dlist-align">
+              <dt>Total:</dt>
+              <dd class="text-right text-dark b"><strong>${{ grand_total }}</strong></dd>
+            </dl>
+            <hr>
+            <p class="text-center mb-3">
+              <img src="{% static 'images/misc/payments.png' %}" height="26">
+            </p>
+            <a href="{% url 'checkout' %}" class="btn btn-primary btn-block">Pagar</a>
+            <a href="{% url 'store' %}" class="btn btn-light btn-block">Continuar comprando</a>
           </div>
-
-          {% include 'includes/alerts.html' %}
-        </form>
-
-        <br>
-        <header class="section-heading">
-          <h3>Reseñas de compradores verificados</h3>
-          <div class="rating-star">
-            <span>
-              {% for i in "12345" %}
-                <i class="fa fa-star{% if single_product.averageReview < forloop.counter0 + 0.5 %}-o{% elif single_product.averageReview < forloop.counter %}-half-o{% endif %}" aria-hidden="true"></i>
-              {% endfor %}
-            </span>
-          </div>
-        </header>
-
-        {% for review in reviews %}
-          <article class="box mb-3">
-            <div class="icontext w-100">
-              <div class="text">
-                <span class="date text-muted float-md-right">{{ review.updated_at }}</span>
-                <h6 class="mb-1">{{ review.user.full_name }}</h6>
-                <div class="rating-star">
-                  <span>
-                    {% for i in "12345" %}
-                      <i class="fa fa-star{% if review.rating < forloop.counter0 + 0.5 %}-o{% elif review.rating < forloop.counter %}-half-o{% endif %}" aria-hidden="true"></i>
-                    {% endfor %}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div class="mt-3">
-              <h6>{{ review.subject }}</h6>
-              <p>{{ review.review }}</p>
-            </div>
-          </article>
-        {% endfor %}
-      </div>
+        </div>
+      </aside>
     </div>
+    {% endif %}
   </div>
 </section>
 {% endblock %}
