@@ -67,11 +67,9 @@ def payments(request):
         'transID': payment.payment_id,
     }
 
-
     return JsonResponse(data)
 
 
-# Create your views here.
 def place_order(request, total=0, quantity=0):
     current_user = request.user
     cart_items = CartItem.objects.filter(user=current_user)
@@ -89,7 +87,6 @@ def place_order(request, total=0, quantity=0):
 
     tax = round((16/100) * total, 2)
     grand_total = total + tax
-
 
     if request.method == 'POST':
         form = OrderForm(request.POST)
@@ -112,10 +109,10 @@ def place_order(request, total=0, quantity=0):
             data.ip = request.META.get('REMOTE_ADDR')
             data.save()
 
-            yr=int(datetime.date.today().strftime('%Y'))
-            mt=int(datetime.date.today().strftime('%m'))
-            dt=int(datetime.date.today().strftime('%d'))
-            d = datetime.date(yr,mt,dt)
+            yr = int(datetime.date.today().strftime('%Y'))
+            mt = int(datetime.date.today().strftime('%m'))
+            dt = int(datetime.date.today().strftime('%d'))
+            d = datetime.date(yr, mt, dt)
             current_date = d.strftime("%Y%m%d")
             order_number = current_date + str(data.id)
             data.order_number = order_number
@@ -131,10 +128,12 @@ def place_order(request, total=0, quantity=0):
             }
 
             return render(request, 'orders/payments.html', context)
-
+        else:
+            print(form.errors)
+            return redirect('checkout')  # <- Agregado para manejar form inválido
     else:
+        print(form.errors)
         return redirect('checkout')
-
 
 
 def order_complete(request):
@@ -147,7 +146,7 @@ def order_complete(request):
 
         subtotal = 0
         for i in ordered_products:
-            subtotal += i.product_price*i.quantity
+            subtotal += i.product_price * i.quantity
 
         payment = Payment.objects.get(payment_id=transID)
 
