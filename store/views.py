@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Product, ReviewRating, ProductGallery
+from .models import Product, ReviewRating, ProductGallery, SizeOption
 from category.models import Category
 from carts.models import CartItem
 from carts.views import _cart_id
@@ -9,6 +9,7 @@ from .forms import ReviewForm, ExcelUploadForm
 from django.contrib import messages
 from orders.models import OrderProduct
 from django.utils.text import slugify
+from django.http import JsonResponse
 import pandas as pd
 
 
@@ -16,24 +17,30 @@ import pandas as pd
 def store(request, category_slug=None):
     categories = None
     products = None
+    talles = None
 
     if category_slug is not None:
         categories = get_object_or_404(Category, slug=category_slug)
         products = Product.objects.filter(category=categories, is_available=True).order_by('id')
+
+        if categories.tipo_talle:
+            talles = SizeOption.objects.filter(categoria_aplicable=categories.tipo_talle)
     else:
         products = Product.objects.filter(is_available=True).order_by('id')
+
+    if 'talle' in request.GET:
+        talle = request.GET['talle']
+        products = products.filter(variation__variation_value__iexact=talle).distinct()
 
     paginator = Paginator(products, 6)
     page = request.GET.get('page')
     paged_products = paginator.get_page(page)
     product_count = products.count()
 
-    sizes = ['XS', 'SM', 'LG', 'XXL']  # Lista de tallas
-
     context = {
         'products': paged_products,
         'product_count': product_count,
-        'sizes': sizes,  # Se pasa al template
+        'talles': talles,
     }
     return render(request, 'store/store.html', context)
 
@@ -128,16 +135,16 @@ def importar_excel(request):
                         continue
 
                     try:
-                        category = Category.objects.get(category_name=category_name)
+                        category = Category.objects.get(category_name__iexact=category_name)
                     except Category.DoesNotExist:
                         messages.warning(request, f"Categoría no encontrada: {category_name}")
                         continue
 
-                    producto = Product.objects.filter(product_name=product_name).first()
+                    producto = Product.objects.filter(product_name__iexact=product_name).first()
 
                     if producto:
                         producto.price = float(price)
-                        producto.stock = int(stock)
+                        producto.stock += int(stock)  # ✅ suma al stock actual
                         producto.description = description
                         producto.category = category
 
@@ -178,3 +185,14 @@ def importar_excel(request):
         form = ExcelUploadForm()
 
     return render(request, 'store/importar_excel.html', {'form': form})
+
+
+
+
+# ========================== OBTENER TALLE POR CATEGORÍA ==========================
+def get_sizes_by_category(request):
+    category = request.GET.get('category')
+    if category:
+        talles = SizeOption.objects.filter(categoria_aplicable=category).values_list('valor', flat=True)
+        return JsonResponse({'sizes': list(talles)})
+    return JsonResponse({'sizes': []})

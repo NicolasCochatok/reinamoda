@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product, Variation, ReviewRating, ProductGallery
+from .models import Product, Variation, ReviewRating, ProductGallery, SizeOption
 import admin_thumbnails
 
 
@@ -19,6 +19,13 @@ class VariationAdmin(admin.ModelAdmin):
     list_display = ('product', 'variation_category', 'variation_value', 'is_active')
     list_editable = ('is_active',)
     list_filter = ('product', 'variation_category', 'variation_value', 'is_active')
+
+
+@admin.register(SizeOption)
+class SizeOptionAdmin(admin.ModelAdmin):
+    list_display = ('categoria_aplicable', 'valor')
+    list_filter = ('categoria_aplicable',)
+    search_fields = ('valor',)
 
 
 admin.site.register(Product, ProductAdmin)

@@ -1,10 +1,9 @@
-# carts/views.py
 from django.shortcuts import render, redirect, get_object_or_404
 from store.models import Product, Variation
 from .models import Cart, CartItem
 from django.core.exceptions import ObjectDoesNotExist
-from django.contrib.auth.decorators import login_required
-from orders.forms import OrderForm  # Importa el formulario aquí
+from orders.forms import OrderForm
+from django.contrib import messages
 
 # ===================== FUNCIONES AUXILIARES =====================
 def _cart_id(request):
@@ -40,19 +39,25 @@ def add_cart(request, product_id):
 
     for item in cart_item_qs:
         if list(item.variation.all()) == product_variation:
-            item.quantity += 1
-            item.save()
+            if item.quantity < product.stock:
+                item.quantity += 1
+                item.save()
+            else:
+                messages.warning(request, 'No hay más stock disponible para este producto.')
             break
     else:
-        cart_item = CartItem.objects.create(
-            product=product,
-            quantity=1,
-            user=current_user if current_user.is_authenticated else None,
-            cart=None if current_user.is_authenticated else cart
-        )
-        if product_variation:
-            cart_item.variation.set(product_variation)
-        cart_item.save()
+        if product.stock >= 1:
+            cart_item = CartItem.objects.create(
+                product=product,
+                quantity=1,
+                user=current_user if current_user.is_authenticated else None,
+                cart=None if current_user.is_authenticated else cart
+            )
+            if product_variation:
+                cart_item.variation.set(product_variation)
+            cart_item.save()
+        else:
+            messages.warning(request, 'Este producto está agotado.')
 
     return redirect('cart')
 
@@ -111,19 +116,26 @@ def cart(request, total=0, quantity=0, cart_items=None):
     }
     return render(request, 'store/cart.html', context)
 
-@login_required(login_url='login')
 def checkout(request, total=0, quantity=0, cart_items=None):
+    if not request.session.session_key:
+        request.session.create()
+
     tax = 0
     grand_total = 0
     try:
-        cart_items = CartItem.objects.filter(user=request.user, is_active=True)
+        if request.user.is_authenticated:
+            cart_items = CartItem.objects.filter(user=request.user, is_active=True)
+        else:
+            cart = Cart.objects.get(cart_id=_cart_id(request))
+            cart_items = CartItem.objects.filter(cart=cart, is_active=True)
+
         for item in cart_items:
             total += item.product.price * item.quantity
             quantity += item.quantity
         tax = round((16 / 100) * total, 2)
         grand_total = total + tax
     except ObjectDoesNotExist:
-        pass
+        cart_items = []
 
     form = OrderForm()
     context = {

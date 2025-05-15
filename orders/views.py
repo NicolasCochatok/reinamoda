@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
-from carts.models import CartItem
+from carts.models import CartItem, Cart
 from .forms import OrderForm
 import datetime
 from .models import Order, Payment, OrderProduct
@@ -11,129 +11,135 @@ from django.template.loader import render_to_string
 
 
 def payments(request):
-    body = json.loads(request.body)
-    order = Order.objects.get(user=request.user, is_ordered=False, order_number=body['orderID'])
+    if request.method == "POST":
+        try:
+            if not request.body:
+                return JsonResponse({'error': 'No data received'}, status=400)
 
-    payment = Payment(
-        user = request.user,
-        payment_id = body['transID'],
-        payment_method = body['payment_method'],
-        amount_id = order.order_total,
-        status = body['status'],
-    )
+            body = json.loads(request.body)
+            order = Order.objects.get(order_number=body['orderID'])
 
-    payment.save()
-    order.payment = payment
-    order.is_ordered = True
-    order.save()
+            if order.is_ordered:
+                return JsonResponse({'message': 'La orden ya fue procesada'}, status=200)
 
-    cart_items = CartItem.objects.filter(user=request.user)
+            payment = Payment(
+                payment_id=body['transID'],
+                payment_method=body['payment_method'],
+                amount_id=order.order_total,
+                status=body['status'],
+            )
+            if request.user.is_authenticated:
+                payment.user = request.user
+            payment.save()
 
-    for item in cart_items:
-        orderproduct = OrderProduct()
-        orderproduct.order_id = order.id
-        orderproduct.payment = payment
-        orderproduct.user_id = request.user.id
-        orderproduct.product_id = item.product_id
-        orderproduct.quantity = item.quantity
-        orderproduct.product_price = item.product.price
-        orderproduct.ordered = True
-        orderproduct.save()
+            order.payment = payment
+            order.is_ordered = True
+            if request.user.is_authenticated:
+                order.user = request.user
+            order.save()
 
-        cart_item = CartItem.objects.get(id=item.id)
-        product_variation = cart_item.variation.all()
-        orderproduct = OrderProduct.objects.get(id=orderproduct.id)
-        orderproduct.variation.set(product_variation)
-        orderproduct.save()
+            if request.user.is_authenticated:
+                cart_items = CartItem.objects.filter(user=request.user)
+            else:
+                cart = Cart.objects.get(cart_id=request.session.session_key)
+                cart_items = CartItem.objects.filter(cart=cart)
 
-        product = Product.objects.get(id=item.product_id)
-        product.stock -= item.quantity
-        product.save()
+            for item in cart_items:
+                orderproduct = OrderProduct()
+                orderproduct.order = order
+                orderproduct.payment = payment
+                if request.user.is_authenticated:
+                    orderproduct.user = request.user
+                orderproduct.product = item.product
+                orderproduct.quantity = item.quantity
+                orderproduct.product_price = item.product.price
+                orderproduct.ordered = True
+                orderproduct.save()
 
-    CartItem.objects.filter(user=request.user).delete()
+                orderproduct.variation.set(item.variation.all())
+                orderproduct.save()
 
-    mail_subject = 'Tu compra fue realizada!'
-    body = render_to_string('orders/order_recieved_email.html', {
-        'user': request.user,
-        'order': order,
-    })
+                product = Product.objects.get(id=item.product_id)
+                product.stock -= item.quantity
+                product.save()
 
-    to_email = request.user.email
-    send_email = EmailMessage(mail_subject, body, to=[to_email])
-    send_email.send()
+            cart_items.delete()
 
-    data = {
-        'order_number': order.order_number,
-        'transID': payment.payment_id,
-    }
+            mail_subject = 'Tu compra fue realizada!'
+            email_body = render_to_string('orders/order_recieved_email.html', {
+                'user': request.user.first_name if request.user.is_authenticated else order.first_name,
+                'order': order,
+            })
 
-    return JsonResponse(data)
+            to_email = request.user.email if request.user.is_authenticated else order.email
+            send_email = EmailMessage(mail_subject, email_body, to=[to_email])
+            send_email.content_subtype = "html"
+            send_email.send()
+
+            return JsonResponse({
+                'order_number': order.order_number,
+                'transID': payment.payment_id,
+                'message': 'Compra exitosa'
+            })
+
+        except Order.DoesNotExist:
+            print("❌ Error: Orden no encontrada.")
+            return JsonResponse({'error': 'Orden no encontrada'}, status=404)
+
+        except Exception as e:
+            print("❌ Error en payments:", e)
+            return JsonResponse({'error': str(e)}, status=500)
 
 
 def place_order(request, total=0, quantity=0):
-    current_user = request.user
-    cart_items = CartItem.objects.filter(user=current_user)
-    cart_count = cart_items.count()
+    if not request.session.session_key:
+        request.session.create()
 
-    if cart_count <= 0:
+    if request.user.is_authenticated:
+        cart_items = CartItem.objects.filter(user=request.user)
+    else:
+        try:
+            cart = Cart.objects.get(cart_id=request.session.session_key)
+            cart_items = CartItem.objects.filter(cart=cart)
+        except Cart.DoesNotExist:
+            cart_items = []
+
+    if not cart_items or not cart_items.exists():
         return redirect('store')
 
-    grand_total = 0
-    tax = 0
-
     for cart_item in cart_items:
-        total += (cart_item.product.price * cart_item.quantity)
+        total += cart_item.product.price * cart_item.quantity
         quantity += cart_item.quantity
 
-    tax = round((16/100) * total, 2)
+    tax = round((16 / 100) * total, 2)
     grand_total = total + tax
 
     if request.method == 'POST':
         form = OrderForm(request.POST)
-
         if form.is_valid():
-            data = Order()
-            data.user = current_user
-            data.first_name = form.cleaned_data['first_name']
-            data.last_name = form.cleaned_data['last_name']
-            data.phone = form.cleaned_data['phone']
-            data.email = form.cleaned_data['email']
-            data.address_line_1 = form.cleaned_data['address_line_1']
-            data.address_line_2 = form.cleaned_data['address_line_2']
-            data.country = form.cleaned_data['country']
-            data.city = form.cleaned_data['city']
-            data.state = form.cleaned_data['state']
-            data.order_note = form.cleaned_data['order_note']
-            data.order_total = grand_total
-            data.tax = tax
-            data.ip = request.META.get('REMOTE_ADDR')
-            data.save()
+            order = form.save(commit=False)
+            if request.user.is_authenticated:
+                order.user = request.user
+            order.order_total = grand_total
+            order.tax = tax
+            order.ip = request.META.get('REMOTE_ADDR')
+            order.save()
 
-            yr = int(datetime.date.today().strftime('%Y'))
-            mt = int(datetime.date.today().strftime('%m'))
-            dt = int(datetime.date.today().strftime('%d'))
-            d = datetime.date(yr, mt, dt)
-            current_date = d.strftime("%Y%m%d")
-            order_number = current_date + str(data.id)
-            data.order_number = order_number
-            data.save()
+            current_date = datetime.date.today().strftime("%Y%m%d")
+            order_number = current_date + str(order.id)
+            order.order_number = order_number
+            order.save()
 
-            order = Order.objects.get(user=current_user, is_ordered=False, order_number=order_number)
-            context = {
+            return render(request, 'orders/payments.html', {
                 'order': order,
                 'cart_items': cart_items,
                 'total': total,
                 'tax': tax,
                 'grand_total': grand_total,
-            }
-
-            return render(request, 'orders/payments.html', context)
+            })
         else:
-            print(form.errors)
-            return redirect('checkout')  # <- Agregado para manejar form inválido
-    else:
-        print(form.errors)
-        return redirect('checkout')
+            return redirect('checkout')
+    return redirect('checkout')
 
 
 def order_complete(request):
@@ -144,10 +150,7 @@ def order_complete(request):
         order = Order.objects.get(order_number=order_number, is_ordered=True)
         ordered_products = OrderProduct.objects.filter(order_id=order.id)
 
-        subtotal = 0
-        for i in ordered_products:
-            subtotal += i.product_price * i.quantity
-
+        subtotal = sum(item.product_price * item.quantity for item in ordered_products)
         payment = Payment.objects.get(payment_id=transID)
 
         context = {
@@ -161,5 +164,5 @@ def order_complete(request):
 
         return render(request, 'orders/order_complete.html', context)
 
-    except(Payment.DoesNotExist, Order.DoesNotExist):
+    except (Order.DoesNotExist, Payment.DoesNotExist):
         return redirect('home')

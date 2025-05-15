@@ -10,7 +10,7 @@ def home(request):
 
     context = {
         'products': products,
-        'reviews': reviews,
+        #'reviews': reviews,
     }
 
     return render(request, 'home.html', context)

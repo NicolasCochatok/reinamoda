@@ -1,10 +1,52 @@
 {% autoescape off %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <title>Confirmación de Compra - Reina Moda</title>
+    <style>
+      body {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        background-color: #fef7f3;
+        color: #444;
+        line-height: 1.6;
+        padding: 20px;
+      }
+      .container {
+        max-width: 600px;
+        margin: auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      }
+      h2 {
+        color: #b5838d;
+      }
+      .footer {
+        margin-top: 40px;
+        font-size: 0.9rem;
+        color: #888;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>¡Gracias por tu compra, {{ user.first_name }}!</h2>
 
-Estimado/a {{user.first_name}},
+      <p>Hemos recibido correctamente tu pedido <strong>#{{ order.order_number }}</strong>.</p>
 
-Gracias por realizar tu compra en ByteShop!
-Hemos recibido tu orden {{ order.order_number }}
+      <p>En breve comenzaremos a preparar tu orden con mucho cuidado para que llegue a vos lo antes posible. Te mantendremos informada a través del correo electrónico.</p>
 
-Para obtener ayuda adicional, visite nuestro Centro de soporte.
-Este es un mensaje automático, por favor, no respondas.
+      <p>Si necesitás ayuda adicional o querés consultar el estado de tu orden, podés visitar nuestro <a href="https://reina-moda.com/soporte" style="color:#b5838d;">Centro de Soporte</a>.</p>
+
+      <p>Gracias por elegir <strong>Reina Moda y Accesorios</strong>. ¡Esperamos que disfrutes tus productos!</p>
+
+      <div class="footer">
+        <p>Este es un mensaje automático, por favor no respondas directamente a este correo.</p>
+      </div>
+    </div>
+  </body>
+</html>
 {% endautoescape %}

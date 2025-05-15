@@ -9,7 +9,7 @@ class Product(models.Model):
     slug = models.SlugField(max_length=200, unique=True)
     description = models.TextField(max_length=500, blank=True)
     price = models.IntegerField()
-    image = models.ImageField(upload_to='photos/products')  # Cambiado a singular
+    image = models.ImageField(upload_to='photos/products', blank=True, null=True)
     stock = models.IntegerField()
     is_available = models.BooleanField(default=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
@@ -36,6 +36,7 @@ class Product(models.Model):
             count = int(reviews['count'])
         return count
 
+
 class VariationManager(models.Manager):
     def colors(self):
         return super().filter(variation_category='color', is_active=True)
@@ -43,9 +44,10 @@ class VariationManager(models.Manager):
     def tallas(self):
         return super().filter(variation_category='talla', is_active=True)
 
+
 variation_category_choice = (
-    ('color', 'color'),
-    ('talla', 'talla'),
+    ('color', 'Color'),
+    ('talla', 'Talla'),
 )
 
 class Variation(models.Model):
@@ -59,6 +61,7 @@ class Variation(models.Model):
 
     def __str__(self):
         return f"{self.variation_category}: {self.variation_value}"
+
 
 class ReviewRating(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -74,9 +77,26 @@ class ReviewRating(models.Model):
     def __str__(self):
         return self.subject
 
+
 class ProductGallery(models.Model):
     product = models.ForeignKey(Product, default=None, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='store/products', max_length=255)
 
     def __str__(self):
         return self.product.product_name
+
+
+# NUEVO MODELO PARA GESTIÓN DE TALLE POR TIPO DE PRODUCTO
+class SizeOption(models.Model):
+    CATEGORIA_TALLE = (
+        ('anillo', 'Anillo'),
+        ('pulsera', 'Pulsera'),
+        ('collar', 'Collar'),
+        ('aro', 'Aro'),
+        ('dije', 'Dije'),
+    )
+    categoria_aplicable = models.CharField(max_length=20, choices=CATEGORIA_TALLE)
+    valor = models.CharField(max_length=50)
+
+    def __str__(self):
+        return f"{self.categoria_aplicable} - {self.valor}"

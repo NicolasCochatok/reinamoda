@@ -213,7 +213,7 @@ def resetPassword(request):
             user.set_password(password)
             user.save()
             messages.success(request, 'La contraseña se actualizó correctamente')
-            return redirect('login')
+            return redirect('reset_password_success')  # <- REDIRECCIÓN ACTUALIZADA
         else:
             messages.error(request, 'La contraseña de confirmación no concuerda')
             return redirect('resetPassword')
@@ -277,3 +277,6 @@ def change_password(request):
             return redirect('change_password')
 
     return render(request, 'accounts/change_password.html')
+def reset_password_success(request):
+    return render(request, 'accounts/reset_password_success.html')
+

@@ -3,168 +3,127 @@
 {% load custom_filters %}
 
 {% block content %}
-{% block body_class %}store-page{% endblock %}
-
-<!-- SECTION: Título -->
-<section class="section-pagetop bg">
+<section class="py-5 bg-white">
   <div class="container">
-    <h2 class="title-page">Encuentra los mejores productos</h2>
-  </div>
-</section>
-
-<!-- SECTION: Contenido -->
-<section class="section-content padding-y">
-  <div class="container">
+    <h2 class="text-center section-title mb-4">Encuentra los mejores productos</h2>
     <div class="row">
-      <!-- FILTROS LATERALES -->
-      <aside class="col-md-3">
-        <div class="card">
 
-          <!-- Categorías -->
-          <article class="filter-group">
-            <header class="card-header">
-              <a href="#" data-toggle="collapse" data-target="#collapse_1" aria-expanded="true">
-                <i class="icon-control fa fa-chevron-down"></i>
-                <h6 class="title">Categorías</h6>
-              </a>
-            </header>
-            <div class="filter-content collapse show" id="collapse_1">
-              <div class="card-body">
-                <ul class="list-menu">
-                  <li><a href="{% url 'store' %}">Mostrar Todos</a></li>
-                  {% for category in links %}
-                    <li><a href="{{ category.get_url }}">{{ category.category_name }}</a></li>
-                  {% endfor %}
-                </ul>
-              </div>
-            </div>
-          </article>
-
-          <!-- Tamaños -->
-          <article class="filter-group">
-            <header class="card-header">
-              <a href="#" data-toggle="collapse" data-target="#collapse_4" aria-expanded="true">
-                <i class="icon-control fa fa-chevron-down"></i>
-                <h6 class="title">Tamaños</h6>
-              </a>
-            </header>
-            <div class="filter-content collapse show" id="collapse_4">
-              <div class="card-body">
-                {% for size in sizes %}
-                <label class="checkbox-btn">
-                  <input type="checkbox" name="size" value="{{ size }}">
-                  <span class="btn btn-light"> {{ size }} </span>
-                </label>
+      <!-- FILTROS -->
+      <aside class="col-md-3 mb-4">
+        <form method="GET">
+          <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+              <h5 class="card-title section-title">Categorías</h5>
+              <ul class="list-unstyled">
+                <li><a href="{% url 'store' %}" class="text-dark">Mostrar todos</a></li>
+                {% for category in links %}
+                <li><a href="{{ category.get_url }}" class="text-dark">{{ category.category_name }}</a></li>
                 {% endfor %}
-              </div>
+              </ul>
             </div>
-          </article>
+          </div>
 
-          <!-- Precios -->
-          <article class="filter-group">
-            <header class="card-header">
-              <a href="#" data-toggle="collapse" data-target="#collapse_3" aria-expanded="true">
-                <i class="icon-control fa fa-chevron-down"></i>
-                <h6 class="title">Precios</h6>
-              </a>
-            </header>
-            <div class="filter-content collapse show" id="collapse_3">
-              <div class="card-body">
-                <div class="form-row">
-                  <div class="form-group col-md-6">
-                    <label>Min</label>
-                    {% with "0 50 100 150 200 500 1000"|split:" " as precios_min %}
-                      <select class="form-control">
-                        {% for p in precios_min %}
-                          <option value="{{ p }}">${{ p }}</option>
-                        {% endfor %}
-                      </select>
+          {% if talles %}
+          <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+              <h5 class="card-title section-title">Tamaños</h5>
+              {% for size in talles %}
+              <label class="d-block small">
+                <input type="radio" name="talle" value="{{ size.valor }}"
+                  {% if request.GET.talle == size.valor %}checked{% endif %}> {{ size.valor }}
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="card border-0 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title section-title">Precios</h5>
+              <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label>Min</label>
+                  <select name="min_price" class="form-control form-control-sm">
+                    {% with "0 1000 2000 3000 5000 10000 20000"|split:" " as precios_min %}
+                    {% for p in precios_min %}
+                    <option value="{{ p }}" {% if request.GET.min_price == p %}selected{% endif %}>${{ p }}</option>
+                    {% endfor %}
                     {% endwith %}
-                  </div>
-                  <div class="form-group col-md-6 text-right">
-                    <label>Max</label>
-                    {% with "50 100 150 200 500 1000 2000"|split:" " as precios_max %}
-                      <select class="form-control">
-                        {% for p in precios_max %}
-                          <option value="{{ p }}">${{ p }}{% if p == '2000' %}+{% endif %}</option>
-                        {% endfor %}
-                      </select>
-                    {% endwith %}
-                  </div>
+                  </select>
                 </div>
-                <button class="btn btn-block btn-primary">Buscar</button>
+                <div class="form-group col-md-6">
+                  <label>Max</label>
+                  <select name="max_price" class="form-control form-control-sm">
+                    {% with "5000 7500 10000 20000 30000 50000 70000 100000"|split:" " as precios_max %}
+                    {% for p in precios_max %}
+                    <option value="{{ p }}" {% if request.GET.max_price == p %}selected{% endif %}>${{ p }}</option>
+                    {% endfor %}
+                    {% endwith %}
+                  </select>
+                </div>
               </div>
+              <button type="submit" class="btn btn-rosa btn-sm btn-block mt-2">Filtrar</button>
             </div>
-          </article>
-
-        </div>
+          </div>
+        </form>
       </aside>
 
       <!-- PRODUCTOS -->
       <main class="col-md-9">
-        <header class="border-bottom mb-4 pb-3">
-          <div class="form-inline">
-            <span class="mr-md-auto"><b>{{ product_count }}</b> Productos Encontrados</span>
-          </div>
-        </header>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="text-muted">{{ product_count }} producto(s) encontrados</span>
+        </div>
 
         <div class="row">
           {% if products %}
-            {% for product in products %}
-              <div class="col-md-4">
-                <figure class="card card-product-grid">
-                  <div class="img-wrap">
-                    <a href="{{ product.get_url }}">
-                      {% if product.image %}
-                          <img src="{{ product.image.url }}" alt="{{ product.product_name }}">
-                      {% else %}
-                          <img src="{% static 'images/no-image.png' %}" alt="Imagen no disponible">
-                      {% endif %}
-                    </a>
-                  </div>
-                  <figcaption class="info-wrap">
-                    <div class="fix-height">
-                      <a href="{{ product.get_url }}" class="title">{{ product.product_name }}</a>
-                      <div class="price-wrap mt-2">
-                        <span class="price">${{ product.price }}</span>
-                      </div>
-                    </div>
-                    <a href="{% url 'add_cart' product.id %}" class="btn btn-block btn-success">Agregar al Carrito</a>
-                  </figcaption>
-                </figure>
+          {% for product in products %}
+          <div class="col-md-4 col-sm-6 mb-4">
+            <div class="card border-0 shadow-sm h-100 card-product-grid">
+              <a href="{{ product.get_url }}">
+                {% if product.image %}
+                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.product_name }}">
+                {% else %}
+                <img src="{% static 'images/no-image.png' %}" class="card-img-top" alt="Sin imagen">
+                {% endif %}
+              </a>
+              <div class="card-body text-center">
+                <h6 class="card-title">{{ product.product_name }}</h6>
+                <p class="text-muted mb-1 price">${{ product.price }}</p>
+                <a href="{% url 'add_cart' product.id %}" class="btn btn-rosa btn-sm w-100">Agregar al carrito</a>
               </div>
-            {% endfor %}
-          {% else %}
-            <div style="text-align: center; color: darkgray; font-size: small;">
-              <h2>No se han encontrado resultados para tu búsqueda</h2>
             </div>
+          </div>
+          {% endfor %}
+          {% else %}
+          <div class="col-12 text-center text-muted">
+            <h4>No hay productos disponibles.</h4>
+          </div>
           {% endif %}
         </div>
 
-        <!-- Paginación -->
-        <nav class="mt-4" aria-label="Page navigation">
-          {% if products.has_other_pages %}
-            <ul class="pagination">
-              {% if products.has_previous %}
-                <li class="page-item"><a class="page-link" href="?page={{ products.previous_page_number }}">Anterior</a></li>
-              {% else %}
-                <li class="page-item disabled"><span class="page-link">Anterior</span></li>
-              {% endif %}
+        {% if products.has_other_pages %}
+        <nav class="mt-4">
+          <ul class="pagination justify-content-center">
+            {% if products.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ products.previous_page_number }}">Anterior</a></li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+            {% endif %}
 
-              {% for i in products.paginator.page_range %}
-                <li class="page-item {% if products.number == i %}active{% endif %}">
-                  <a class="page-link" href="?page={{ i }}">{{ i }}</a>
-                </li>
-              {% endfor %}
+            {% for i in products.paginator.page_range %}
+            <li class="page-item {% if products.number == i %}active{% endif %}">
+              <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+            </li>
+            {% endfor %}
 
-              {% if products.has_next %}
-                <li class="page-item"><a class="page-link" href="?page={{ products.next_page_number }}">Siguiente</a></li>
-              {% else %}
-                <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
-              {% endif %}
-            </ul>
-          {% endif %}
+            {% if products.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ products.next_page_number }}">Siguiente</a></li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+            {% endif %}
+          </ul>
         </nav>
+        {% endif %}
       </main>
     </div>
   </div>

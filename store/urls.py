@@ -18,5 +18,7 @@ urlpatterns = [
 
     # Importar Excel
     path('importar-excel/', views.importar_excel, name='importar_excel'),
-]
 
+    # Obtener talles según categoría
+    path('get-sizes/', views.get_sizes_by_category, name='get_sizes_by_category'),
+]

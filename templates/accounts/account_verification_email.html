@@ -1,13 +1,36 @@
 {% autoescape off %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Verificación de cuenta - Reina Moda y Accesorios</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f7f7f7; padding: 20px; color: #333;">
+    <div style="max-width: 600px; margin: auto; background-color: white; border-radius: 8px; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+        <h2 style="color: #b5838d;">¡Hola {{ user.first_name }}!</h2>
+        <p>Gracias por registrarte en <strong>Reina Moda y Accesorios</strong>. Estás a un paso de acceder a nuestras colecciones exclusivas.</p>
 
-Hola {{ user.first_name }} !,
-Gracias por unirte a ByteShop. Estás a un paso de disfrutar de los mejores productos tecnológicos.
+        <p style="margin-top: 20px;">
+            Para activar tu cuenta, hacé clic en el siguiente botón:
+        </p>
 
-Para activar su cuenta, haga clic en el siguiente enlace dentro de los siguientes 30 minutos:
-http://{{domain}}{% url 'activate' uidb64=uid token=token %}
-O simplemente copie y pegue el enlace completo directamente en la barra de direcciones de su navegador.
+        <p style="text-align: center; margin: 30px 0;">
+            <a href="http://{{domain}}{% url 'activate' uidb64=uid token=token %}"
+               style="background-color: #b5838d; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px;">
+               Activar mi cuenta
+            </a>
+        </p>
 
-Para obtener ayuda adicional, visite nuestro Centro de soporte.
-Si no realizó esta acción, ignore este correo electrónico. Si el código de activación ha caducado, simplemente envíe una nueva solicitud.
+        <p>O copiá y pegá este enlace en tu navegador:</p>
+        <p style="word-break: break-all; color: #555;">
+            http://{{domain}}{% url 'activate' uidb64=uid token=token %}
+        </p>
 
+        <hr style="margin: 30px 0;">
+        <p style="font-size: 0.9em; color: #777;">
+            Si no realizaste esta acción, podés ignorar este correo. Si el enlace caducó, simplemente solicitá uno nuevo desde nuestro sitio.
+        </p>
+    </div>
+</body>
+</html>
 {% endautoescape %}

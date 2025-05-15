@@ -2,7 +2,6 @@ from django.db import models
 from store.models import Product, Variation
 from accounts.models import Account
 
-
 # Create your models here.
 class Cart(models.Model):
     cart_id = models.CharField(max_length=250, blank=True)
@@ -22,6 +21,13 @@ class CartItem(models.Model):
     def sub_total(self):
         return self.product.price * self.quantity
 
+    def get_image_url(self):
+        """
+        Retorna la URL segura de la imagen del producto o una imagen por defecto si no está cargada.
+        """
+        if self.product.image and hasattr(self.product.image, 'url'):
+            return self.product.image.url
+        return '/static/images/no-image.png'
 
-    def __unicode__(self):
-        return self.product
+    def __str__(self):
+        return self.product.product_name
