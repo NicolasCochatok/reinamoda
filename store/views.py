@@ -14,19 +14,22 @@ import pandas as pd
 
 
 # ========================== PÁGINA STORE ==========================
-def store(request, category_slug=None):
-    categories = None
-    products = None
+def store(request, material_slug=None, category_slug=None):
+    if not category_slug and 'categoria' in request.GET:
+        category_slug = request.GET.get('categoria')
+
+    categories = Category.objects.all()
+    products = Product.objects.filter(is_available=True).order_by('id')
     talles = None
 
-    if category_slug is not None:
-        categories = get_object_or_404(Category, slug=category_slug)
-        products = Product.objects.filter(category=categories, is_available=True).order_by('id')
+    if material_slug:
+        products = products.filter(material=material_slug)
 
-        if categories.tipo_talle:
-            talles = SizeOption.objects.filter(categoria_aplicable=categories.tipo_talle)
-    else:
-        products = Product.objects.filter(is_available=True).order_by('id')
+    if category_slug:
+        selected_category = get_object_or_404(Category, slug=category_slug)
+        products = products.filter(category=selected_category)
+        if selected_category.tipo_talle:
+            talles = SizeOption.objects.filter(categoria_aplicable=selected_category.tipo_talle)
 
     if 'talle' in request.GET:
         talle = request.GET['talle']
@@ -41,6 +44,8 @@ def store(request, category_slug=None):
         'products': paged_products,
         'product_count': product_count,
         'talles': talles,
+        'categories': categories,
+        'material_slug': material_slug,
     }
     return render(request, 'store/store.html', context)
 
@@ -144,7 +149,7 @@ def importar_excel(request):
 
                     if producto:
                         producto.price = float(price)
-                        producto.stock += int(stock)  # ✅ suma al stock actual
+                        producto.stock += int(stock)
                         producto.description = description
                         producto.category = category
 
@@ -185,8 +190,6 @@ def importar_excel(request):
         form = ExcelUploadForm()
 
     return render(request, 'store/importar_excel.html', {'form': form})
-
-
 
 
 # ========================== OBTENER TALLE POR CATEGORÍA ==========================

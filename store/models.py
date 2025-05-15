@@ -5,6 +5,14 @@ from accounts.models import Account
 from django.db.models import Avg, Count
 
 class Product(models.Model):
+    MATERIAL_CHOICES = [
+        ('acero_quirurgico', 'Acero Quirúrgico'),
+        ('acero_blanco', 'Acero Blanco'),
+        ('acero_dorado', 'Acero Dorado'),
+        ('plata_925', 'Plata 925'),
+        ('oro_18k', 'Oro 18k'),
+    ]
+
     product_name = models.CharField(max_length=200, unique=True)
     slug = models.SlugField(max_length=200, unique=True)
     description = models.TextField(max_length=500, blank=True)
@@ -13,6 +21,7 @@ class Product(models.Model):
     stock = models.IntegerField()
     is_available = models.BooleanField(default=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    material = models.CharField(max_length=50, choices=MATERIAL_CHOICES, default='acero_quirurgico')
     created_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
 

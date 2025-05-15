@@ -2,12 +2,15 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    # Página principal del store con o sin filtros
     path('', views.store, name="store"),
+    path('<str:material_slug>/', views.store, name="products_by_material"),
+    path('<str:material_slug>/<slug:category_slug>/', views.store, name="products_by_material_category"),
 
-    # Primero va la URL más específica: detalle de producto
+    # Detalle de producto
     path('category/<slug:category_slug>/<slug:product_slug>/', views.product_detail, name="product_detail"),
 
-    # Luego la URL de listado por categoría
+    # Listado solo por categoría (ruta vieja si querés mantenerla)
     path('category/<slug:category_slug>/', views.store, name="products_by_category"),
 
     # Búsqueda

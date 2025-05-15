@@ -37,31 +37,31 @@
 
     <div class="row g-3">
       <div class="col-md-4">
-        <a href="{% url 'products_by_category' 'anillos' %}" class="category-tile d-block">
+        <a href="{% url 'store' %}?categoria=anillos" class="category-tile d-block">
           <img src="{% static 'images/categoria/seccion_ anillos_hero.png' %}" class="img-fluid rounded" alt="Anillos">
           <div class="category-label mt-2 text-center text-dark">Anillos</div>
         </a>
       </div>
       <div class="col-md-4">
-        <a href="{% url 'products_by_category' 'pulseras' %}" class="category-tile d-block">
+        <a href="{% url 'store' %}?categoria=pulseras" class="category-tile d-block">
           <img src="{% static 'images/categoria/seccion_ pulseras_hero.png' %}" class="img-fluid rounded" alt="Pulseras">
           <div class="category-label mt-2 text-center text-dark">Pulseras</div>
         </a>
       </div>
       <div class="col-md-4">
-        <a href="{% url 'products_by_category' 'aros' %}" class="category-tile d-block">
+        <a href="{% url 'store' %}?categoria=aros" class="category-tile d-block">
           <img src="{% static 'images/categoria/seccion_ aros_hero.png' %}" class="img-fluid rounded" alt="Aros">
           <div class="category-label mt-2 text-center text-dark">Aros</div>
         </a>
       </div>
       <div class="col-md-6">
-        <a href="{% url 'products_by_category' 'collares' %}" class="category-tile d-block">
+        <a href="{% url 'store' %}?categoria=collares" class="category-tile d-block">
           <img src="{% static 'images/categoria/seccion_ collares_hero.png' %}" class="img-fluid rounded" alt="Collares">
           <div class="category-label mt-2 text-center text-dark">Collares</div>
         </a>
       </div>
       <div class="col-md-6">
-        <a href="{% url 'products_by_category' 'indumentaria-y-mas' %}" class="category-tile d-block">
+        <a href="{% url 'store' %}?categoria=indumentaria-y-mas" class="category-tile d-block">
           <img src="{% static 'images/categoria/seccion_ ind-accs_hero.png' %}" class="img-fluid rounded" alt="Accesorios e indumentaria">
           <div class="category-label mt-2 text-center text-dark">Indumentaria y Más</div>
         </a>
@@ -77,8 +77,6 @@
     <h2 class="text-white display-3 fw-bold">#Inspiración</h2>
   </div>
 </section>
-
-
 
 <!-- CTA FINAL -->
 <section class="section-cta text-center py-5">

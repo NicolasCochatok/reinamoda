@@ -4,19 +4,20 @@
 
   <!-- 🎉 Marquee superior -->
   <div class="navbar-marquee bg-black text-white py-1">
-  <div class="marquee-content">
-    <span>
-      💎 Instagram: @reina_accesoriosmoda &nbsp; | &nbsp;
-      Compra Mínima $30.000 &nbsp; | &nbsp;
-      Acero Dorado &nbsp; | &nbsp;
-      Acero Blanco &nbsp; | &nbsp;
-      Acero Quirúrgico &nbsp; | &nbsp;
-      🚚 Envíos a todo el país &nbsp; | &nbsp;
-      💰 10% Descuento con Transferencia &nbsp; 💎
-    </span>
+    <div class="marquee-content">
+      <span>
+        💎 Instagram: @reina_accesoriosmoda &nbsp; | &nbsp;
+        Compra Mínima $30.000 &nbsp; | &nbsp;
+        Acero Dorado &nbsp; | &nbsp;
+        Acero Blanco &nbsp; | &nbsp;
+        Acero Quirúrgico &nbsp; | &nbsp;
+        Plata 925 &nbsp; | &nbsp;
+        Oro 18k &nbsp; | &nbsp;
+        🚚 Envíos a todo el país &nbsp; | &nbsp;
+        💰 10% Descuento con Transferencia &nbsp; 💎
+      </span>
+    </div>
   </div>
-</div>
-
 
   <!-- Barra de navegación -->
   <nav class="navbar p-md-0 navbar-expand-sm navbar-light border-bottom">
@@ -48,8 +49,16 @@
             <button class="btn btn-rosa dropdown-toggle" data-toggle="dropdown">
               <i class="fa fa-bars"></i> Categorías
             </button>
-            <div class="dropdown-menu">
-              <a class="dropdown-item" href="{% url 'store' %}">Mostrar Todos</a>
+            <div class="dropdown-menu p-2" style="min-width: 200px;">
+              <a class="dropdown-item fw-bold text-dark" href="{% url 'store' %}">Mostrar Todos</a>
+              <h6 class="dropdown-header mt-2">Materiales</h6>
+              <a class="dropdown-item" href="{% url 'products_by_material' 'acero_quirurgico' %}">Acero Quirúrgico</a>
+              <a class="dropdown-item" href="{% url 'products_by_material' 'acero_blanco' %}">Acero Blanco</a>
+              <a class="dropdown-item" href="{% url 'products_by_material' 'acero_dorado' %}">Acero Dorado</a>
+              <a class="dropdown-item" href="{% url 'products_by_material' 'plata_925' %}">Plata 925</a>
+              <a class="dropdown-item" href="{% url 'products_by_material' 'oro_18k' %}">Oro 18k</a>
+              <div class="dropdown-divider"></div>
+              <h6 class="dropdown-header">Tipos de producto</h6>
               {% for category in links %}
               <a class="dropdown-item" href="{{ category.get_url }}">{{ category.category_name }}</a>
               {% endfor %}
@@ -112,4 +121,3 @@
     </div>
   </section>
 </header>
-

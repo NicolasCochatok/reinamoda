@@ -10,20 +10,39 @@
 
       <!-- FILTROS -->
       <aside class="col-md-3 mb-4">
-        <form method="GET">
-          <div class="card border-0 shadow-sm mb-3">
-            <div class="card-body">
-              <h5 class="card-title section-title">Categorías</h5>
-              <ul class="list-unstyled">
-                <li><a href="{% url 'store' %}" class="text-dark">Mostrar todos</a></li>
-                {% for category in links %}
-                <li><a href="{{ category.get_url }}" class="text-dark">{{ category.category_name }}</a></li>
-                {% endfor %}
-              </ul>
-            </div>
+        <div class="card border-0 shadow-sm mb-3">
+          <div class="card-body">
+            <h5 class="card-title section-title">Material</h5>
+            <ul class="list-unstyled">
+              <li><a href="{% url 'store' %}" class="text-dark">Mostrar todos</a></li>
+              <li><a href="{% url 'products_by_material' 'acero_quirurgico' %}" class="text-dark">Acero Quirúrgico</a></li>
+              <li><a href="{% url 'products_by_material' 'acero_blanco' %}" class="text-dark">Acero Blanco</a></li>
+              <li><a href="{% url 'products_by_material' 'acero_dorado' %}" class="text-dark">Acero Dorado</a></li>
+              <li><a href="{% url 'products_by_material' 'plata_925' %}" class="text-dark">Plata 925</a></li>
+              <li><a href="{% url 'products_by_material' 'oro_18k' %}" class="text-dark">Oro 18k</a></li>
+            </ul>
           </div>
+        </div>
 
-          {% if talles %}
+        {% if material_slug %}
+        <div class="card border-0 shadow-sm mb-3">
+          <div class="card-body">
+            <h5 class="card-title section-title">Categorías</h5>
+            <ul class="list-unstyled">
+              {% for category in categories %}
+              <li>
+                <a href="{% url 'products_by_material_category' material_slug category.slug %}" class="text-dark">
+                  {{ category.category_name }}
+                </a>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if talles %}
+        <form method="get">
           <div class="card border-0 shadow-sm mb-3">
             <div class="card-body">
               <h5 class="card-title section-title">Tamaños</h5>
@@ -33,39 +52,11 @@
                   {% if request.GET.talle == size.valor %}checked{% endif %}> {{ size.valor }}
               </label>
               {% endfor %}
-            </div>
-          </div>
-          {% endif %}
-
-          <div class="card border-0 shadow-sm">
-            <div class="card-body">
-              <h5 class="card-title section-title">Precios</h5>
-              <div class="form-row">
-                <div class="form-group col-md-6">
-                  <label>Min</label>
-                  <select name="min_price" class="form-control form-control-sm">
-                    {% with "0 1000 2000 3000 5000 10000 20000"|split:" " as precios_min %}
-                    {% for p in precios_min %}
-                    <option value="{{ p }}" {% if request.GET.min_price == p %}selected{% endif %}>${{ p }}</option>
-                    {% endfor %}
-                    {% endwith %}
-                  </select>
-                </div>
-                <div class="form-group col-md-6">
-                  <label>Max</label>
-                  <select name="max_price" class="form-control form-control-sm">
-                    {% with "5000 7500 10000 20000 30000 50000 70000 100000"|split:" " as precios_max %}
-                    {% for p in precios_max %}
-                    <option value="{{ p }}" {% if request.GET.max_price == p %}selected{% endif %}>${{ p }}</option>
-                    {% endfor %}
-                    {% endwith %}
-                  </select>
-                </div>
-              </div>
-              <button type="submit" class="btn btn-rosa btn-sm btn-block mt-2">Filtrar</button>
+              <button type="submit" class="btn btn-rosa btn-sm btn-block mt-2">Filtrar por Talle</button>
             </div>
           </div>
         </form>
+        {% endif %}
       </aside>
 
       <!-- PRODUCTOS -->
