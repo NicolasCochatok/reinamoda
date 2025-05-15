@@ -8,6 +8,7 @@ import json
 from store.models import Product
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
+from django.contrib import messages
 
 
 def payments(request):
@@ -30,6 +31,8 @@ def payments(request):
             )
             if request.user.is_authenticated:
                 payment.user = request.user
+            else:
+                payment.user = None  # para compatibilidad si el campo no es obligatorio
             payment.save()
 
             order.payment = payment
@@ -67,7 +70,7 @@ def payments(request):
 
             mail_subject = 'Tu compra fue realizada!'
             email_body = render_to_string('orders/order_recieved_email.html', {
-                'user': request.user.first_name if request.user.is_authenticated else order.first_name,
+                'user': request.user if request.user.is_authenticated else order.first_name,
                 'order': order,
             })
 
@@ -83,11 +86,8 @@ def payments(request):
             })
 
         except Order.DoesNotExist:
-            print("❌ Error: Orden no encontrada.")
             return JsonResponse({'error': 'Orden no encontrada'}, status=404)
-
         except Exception as e:
-            print("❌ Error en payments:", e)
             return JsonResponse({'error': str(e)}, status=500)
 
 
@@ -98,16 +98,17 @@ def place_order(request, total=0, quantity=0):
     if request.user.is_authenticated:
         cart_items = CartItem.objects.filter(user=request.user)
     else:
-        try:
-            cart = Cart.objects.get(cart_id=request.session.session_key)
-            cart_items = CartItem.objects.filter(cart=cart)
-        except Cart.DoesNotExist:
-            cart_items = []
+        cart = Cart.objects.get(cart_id=request.session.session_key)
+        cart_items = CartItem.objects.filter(cart=cart)
 
-    if not cart_items or not cart_items.exists():
+    if not cart_items.exists():
         return redirect('store')
 
     for cart_item in cart_items:
+        if cart_item.quantity > cart_item.product.stock:
+            messages.error(request, f"No hay suficiente stock para '{cart_item.product.product_name}'.")
+            return redirect('cart')
+
         total += cart_item.product.price * cart_item.quantity
         quantity += cart_item.quantity
 
