@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-2!9r@qz7vmx#h%84jv@e-9!al9ewx&1qgcih7i@3s9_k$8n@1z
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['reina-moda.com.ar', 'www.reina-moda.com.ar', '127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'store',
     'carts',
     'orders',
+    'django.contrib.sites',
 ]
 
 MIDDLEWARE = [
@@ -91,10 +92,15 @@ AUTH_USER_MODEL = 'accounts.Account'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'reinamoda',  # o el nombre de tu base creada
+        'USER': 'postgres',
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
+
 
 
 # Password validation
@@ -165,5 +171,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+SITE_ID = 2
+
 
 
