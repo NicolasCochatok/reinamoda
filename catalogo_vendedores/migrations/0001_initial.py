@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('store', '0011_product_size'),
+        ('store', '0009_product_material'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
