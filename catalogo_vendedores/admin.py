@@ -16,8 +16,6 @@ class VentaAdmin(admin.ModelAdmin):
     search_fields = (
         'cliente',
         'producto__product_name',
-        'producto__codigo_unico',
-        'producto__codigo_proveedor',
         'vendedor__email',
         'vendedor__username'
     )

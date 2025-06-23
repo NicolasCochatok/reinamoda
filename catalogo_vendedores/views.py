@@ -12,13 +12,16 @@ from django.db.models import Q
 
 # 🖼️ Vista HTML del catálogo
 def catalogo_productos(request):
-    query = request.GET.get('q')
+    """Renderiza el catálogo para vendedores.
+
+    Se puede filtrar mediante el parámetro ``q``. Solo se muestran productos
+    disponibles con stock positivo para evitar errores al registrar ventas.
+    """
+
+    query = request.GET.get('q', '')
+    productos = Product.objects.filter(is_available=True, stock__gt=0)
     if query:
-        productos = Product.objects.filter(
-            Q(product_name__icontains=query) | Q(codigo_proveedor__icontains=query)
-        )
-    else:
-        productos = Product.objects.all()
+        productos = productos.filter(Q(product_name__icontains=query))
 
     context = {
         'productos': productos
@@ -32,11 +35,7 @@ def catalogo_productos(request):
 def lista_productos(request):
     query = request.GET.get('q', '')
     productos = Product.objects.filter(
-        (
-            Q(product_name__icontains=query) |
-            Q(codigo_proveedor__icontains=query) |
-            Q(codigo_unico__icontains=query)
-        ),
+        Q(product_name__icontains=query),
         stock__gt=0,
         is_available=True
     )
