@@ -113,8 +113,22 @@ Bienvenido al repositorio oficial del sitio web de **Reina Moda y Accesorios**, 
 
 ## 📦 Despliegue
 
-Este proyecto está listo para subir a producción en Hostinger VPS o similar.  
+Este proyecto está listo para subir a producción en Hostinger VPS o similar.
 Se recomienda usar **Gunicorn + Nginx + PostgreSQL** y herramientas como **Certbot** para HTTPS.
+
+---
+
+### ✅ Probar API de detalle de productos
+
+1. Ejecutar el servidor local con `python manage.py runserver`.
+2. Crear un producto en el admin o vía fixtures.
+3. En otra terminal, hacer una petición:
+
+   ```bash
+   curl http://127.0.0.1:8000/catalogo_vendedores/api/cbv/productos/1/
+   ```
+
+   Debería devolver un JSON con los datos del producto con ID `1`.
 
 ---
 

@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'store',
     'carts',
     'orders',
+    'rest_framework',
     'django.contrib.sites',
 ]
 

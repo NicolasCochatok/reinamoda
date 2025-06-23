@@ -22,11 +22,10 @@ class ProductoListView(generics.ListAPIView):
         )
 
 
-# 📦 Detalle de un producto individual por su código único
+# 📦 Detalle de un producto individual por su ID
 class ProductoDetalleView(generics.RetrieveAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    lookup_field = 'codigo_unico'
 
 
 # 💰 Registro de una venta con validación de stock
