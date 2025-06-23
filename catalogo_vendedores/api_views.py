@@ -13,12 +13,9 @@ class ProductoListView(generics.ListAPIView):
     def get_queryset(self):
         query = self.request.GET.get('q', '')
         return Product.objects.filter(
-            (
-                Q(product_name__icontains=query) |
-                Q(codigo_proveedor__icontains=query) |
-                Q(codigo_unico__icontains=query)
-            ),
-            stock__gt=0  # Solo mostrar si hay stock
+            Q(product_name__icontains=query),
+            stock__gt=0,
+            is_available=True
         )
 
 
@@ -26,7 +23,7 @@ class ProductoListView(generics.ListAPIView):
 class ProductoDetalleView(generics.RetrieveAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    lookup_field = 'codigo_unico'
+    lookup_field = 'pk'
 
 
 # 💰 Registro de una venta con validación de stock
